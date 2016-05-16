@@ -499,6 +499,13 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
+
+try:
+    LOGGING_FORMAT = SENTRY_LOGGING_FORMAT
+except NameError:
+    LOGGING_FORMAT = None
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -509,7 +516,7 @@ LOGGING = {
         'console': {
             'level': 'WARNING',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': LOGGING_FORMAT or 'simple',
         },
         'sentry': {
             'level': 'ERROR',
@@ -519,12 +526,12 @@ LOGGING = {
         'audit': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': LOGGING_FORMAT or 'simple',
         },
         'console:api': {
             'level': 'WARNING',
             'class': 'logging.StreamHandler',
-            'formatter': 'client_info',
+            'formatter': LOGGING_FORMAT or 'client_info',
         },
     },
     'filters': {
@@ -538,6 +545,9 @@ LOGGING = {
         },
         'client_info': {
             'format': '[%(levelname)s] [%(project)s] [%(agent)s] %(message)s',
+        },
+        'msgpack': {
+            '()': 'sentry.logging.formatters.MessagePackFormatter',
         },
     },
     'root': {
