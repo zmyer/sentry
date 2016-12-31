@@ -3,7 +3,9 @@ import React from 'react';
 import GroupEventDataSection from './eventDataSection';
 import PropTypes from '../../proptypes';
 import {t} from '../../locale';
+import ContextData from '../contextData';
 
+// TODO(hazat): Is this interface used somewhere? If not delete it? 
 const DeviceInterface = React.createClass({
   propTypes: {
     group: PropTypes.Group.isRequired,
@@ -22,7 +24,7 @@ const DeviceInterface = React.createClass({
       return (
         <tr key={key}>
           <td className="key">{key}</td>
-          <td className="value"><pre>{value}</pre></td>
+          <td className="value"><ContextData data={value} /></td>
         </tr>
       );
     });

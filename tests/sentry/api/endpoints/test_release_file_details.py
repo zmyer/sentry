@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import six
+
 from django.core.urlresolvers import reverse
 
 from sentry.models import File, Release, ReleaseFile
@@ -14,10 +16,13 @@ class ReleaseFileDetailsTest(APITestCase):
 
         release = Release.objects.create(
             project=project,
+            organization_id=project.organization_id,
             version='1',
         )
+        release.add_project(project)
 
         releasefile = ReleaseFile.objects.create(
+            organization_id=project.organization_id,
             project=project,
             release=release,
             file=File.objects.create(
@@ -37,7 +42,7 @@ class ReleaseFileDetailsTest(APITestCase):
         response = self.client.get(url)
 
         assert response.status_code == 200, response.content
-        assert response.data['id'] == str(releasefile.id)
+        assert response.data['id'] == six.text_type(releasefile.id)
 
 
 class ReleaseFileUpdateTest(APITestCase):
@@ -48,10 +53,13 @@ class ReleaseFileUpdateTest(APITestCase):
 
         release = Release.objects.create(
             project=project,
+            organization_id=project.organization_id,
             version='1',
         )
+        release.add_project(project)
 
         releasefile = ReleaseFile.objects.create(
+            organization_id=project.organization_id,
             project=project,
             release=release,
             file=File.objects.create(
@@ -73,7 +81,7 @@ class ReleaseFileUpdateTest(APITestCase):
         })
 
         assert response.status_code == 200, response.content
-        assert response.data['id'] == str(releasefile.id)
+        assert response.data['id'] == six.text_type(releasefile.id)
 
         releasefile = ReleaseFile.objects.get(id=releasefile.id)
         assert releasefile.name == 'foobar'
@@ -88,10 +96,13 @@ class ReleaseFileDeleteTest(APITestCase):
 
         release = Release.objects.create(
             project=project,
+            organization_id=project.organization_id,
             version='1',
         )
+        release.add_project(project)
 
         releasefile = ReleaseFile.objects.create(
+            organization_id=project.organization_id,
             project=project,
             release=release,
             file=File.objects.create(

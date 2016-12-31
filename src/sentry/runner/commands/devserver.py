@@ -8,7 +8,9 @@ sentry.runner.commands.devserver
 from __future__ import absolute_import, print_function
 
 import click
-from sentry.runner.decorators import configuration
+import six
+
+from sentry.runner.decorators import configuration, log_options
 
 
 @click.command()
@@ -16,6 +18,7 @@ from sentry.runner.decorators import configuration
 @click.option('--watchers/--no-watchers', default=True, help='Watch static files and recompile on changes.')
 @click.option('--workers/--no-workers', default=False, help='Run asynchronous workers.')
 @click.argument('bind', default='127.0.0.1:8000', metavar='ADDRESS')
+@log_options()
 @configuration
 def devserver(reload, watchers, workers, bind):
     "Starts a lightweight web server for development."
@@ -54,6 +57,8 @@ def devserver(reload, watchers, workers, bind):
         # Make sure we reload really quickly for local dev in case it
         # doesn't want to shut down nicely on it's own, NO MERCY
         'worker-reload-mercy': 2,
+        # We need stdin to support pdb in devserver
+        'honour-stdin': True,
     }
 
     if reload:
@@ -69,15 +74,25 @@ def devserver(reload, watchers, workers, bind):
             raise click.ClickException('Disable CELERY_ALWAYS_EAGER in your settings file to spawn workers.')
 
         daemons += [
-            ('worker', ['sentry', 'run', 'worker', '-c', '1', '-l', 'INFO', '--autoreload']),
-            ('cron', ['sentry', 'run', 'cron', '-l', 'INFO', '--autoreload']),
+            ('worker', ['sentry', 'run', 'worker', '-c', '1', '--autoreload']),
+            ('cron', ['sentry', 'run', 'cron', '--autoreload']),
         ]
 
     if needs_https and has_https:
-        from urlparse import urlparse
+        from six.moves.urllib.parse import urlparse
         parsed_url = urlparse(url_prefix)
-        https_port = str(parsed_url.port or 443)
+        https_port = six.text_type(parsed_url.port or 443)
         https_host = parsed_url.hostname
+
+        # Determine a random port for the backend http server
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((host, 0))
+        port = s.getsockname()[1]
+        s.close()
+        bind = '%s:%d' % (host, port)
+
         daemons += [
             ('https', ['https', '-host', https_host, '-listen', host + ':' + https_port, bind]),
         ]

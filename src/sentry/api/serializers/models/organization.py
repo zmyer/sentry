@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import six
+
 from sentry.app import quotas
 from sentry.api.serializers import Serializer, register, serialize
 from sentry.auth import access
@@ -18,7 +20,7 @@ from sentry.models import (
 class OrganizationSerializer(Serializer):
     def serialize(self, obj, attrs, user):
         return {
-            'id': str(obj.id),
+            'id': six.text_type(obj.id),
             'slug': obj.slug,
             'name': obj.name,
             'dateCreated': obj.date_added,
@@ -55,6 +57,8 @@ class DetailedOrganizationSerializer(OrganizationSerializer):
         ).select_related('user'))
 
         feature_list = []
+        if features.has('organizations:repos', obj, actor=user):
+            feature_list.append('repos')
         if features.has('organizations:sso', obj, actor=user):
             feature_list.append('sso')
         if features.has('organizations:callsigns', obj, actor=user):

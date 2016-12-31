@@ -1,10 +1,12 @@
+from __future__ import absolute_import
+
 from django.core import signing
 from django.core.urlresolvers import reverse
 
 from sentry import options
 from sentry.models import User
 from sentry.utils.http import absolute_uri
-from sentry.utils.numbers import base36_encode, base32_decode
+from sentry.utils.numbers import base36_encode, base36_decode
 
 
 def get_signer():
@@ -26,7 +28,8 @@ def generate_signed_link(user, viewname, args=None, kwargs=None):
         user_id = user
 
     path = reverse(viewname, args=args, kwargs=kwargs)
-    item = '%s|%s|%s' % (options.get('system.url-prefix'), path, user_id)
+    item = '%s|%s|%s' % (options.get('system.url-prefix'), path,
+                         base36_encode(user_id))
     signature = ':'.join(get_signer().sign(item).rsplit(':', 2)[1:])
 
     return '%s?_=%s:%s' % (
@@ -36,7 +39,7 @@ def generate_signed_link(user, viewname, args=None, kwargs=None):
     )
 
 
-def process_signature(request, max_age=60 * 60 * 24 * 2):
+def process_signature(request, max_age=60 * 60 * 24 * 10):
     """Given a request object this validates the signature from the
     current request and returns the user.
     """
@@ -56,6 +59,6 @@ def process_signature(request, max_age=60 * 60 * 24 * 2):
         return None
 
     try:
-        return User.objects.get(pk=base32_decode(user_id))
+        return User.objects.get(pk=base36_decode(user_id))
     except (ValueError, User.DoesNotExist):
         return None

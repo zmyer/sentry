@@ -1,20 +1,22 @@
 import React from 'react';
 import $ from 'jquery';
 import MD5 from 'crypto-js/md5';
-import LetterAvatar from '../components/letterAvatar';
+import UserLetterAvatar from '../components/userLetterAvatar';
 
 const Avatar = React.createClass({
   propTypes: {
     user: React.PropTypes.object,
     size: React.PropTypes.number,
     default: React.PropTypes.string,
-    title: React.PropTypes.string
+    title: React.PropTypes.string,
+    gravatar: React.PropTypes.bool,
   },
 
   getDefaultProps() {
     return {
       className: 'avatar',
-      size: 64
+      size: 64,
+      gravatar: true,
     };
   },
 
@@ -65,7 +67,11 @@ const Avatar = React.createClass({
     if (user.avatar) {
       avatarType = user.avatar.avatarType;
     } else {
-      avatarType = user.email ? 'gravatar' : 'letter_avatar';
+      avatarType = (
+        (user.email && this.props.gravatar) ?
+          'gravatar' :
+          'letter_avatar'
+      );
     }
     let props = {title: this.props.title, onError: this.onError, onLoad: this.onLoad};
     if (user.options && user.options.avatarType) {
@@ -76,7 +82,7 @@ const Avatar = React.createClass({
     } else if (avatarType === 'upload') {
       return <img src={this.buildProfileUrl()} {...props}/>;
     } else {
-      return <LetterAvatar user={user}/>;
+      return <UserLetterAvatar user={user}/>;
     }
   },
 
@@ -88,7 +94,7 @@ const Avatar = React.createClass({
 
     return (
       <span className={this.props.className}>
-        {this.state.showBackupAvatar && <LetterAvatar user={user}/>}
+        {this.state.showBackupAvatar && <UserLetterAvatar user={user}/>}
         {this.renderImg()}
       </span>
     );

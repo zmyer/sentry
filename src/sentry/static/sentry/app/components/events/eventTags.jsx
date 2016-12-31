@@ -5,8 +5,10 @@ import _ from 'underscore';
 import PropTypes from '../../proptypes';
 
 import EventDataSection from './eventDataSection';
-import {isUrl} from '../../utils';
+import {isUrl, deviceNameMapper} from '../../utils';
 import {t} from '../../locale';
+import Pills from '../pills';
+import Pill from '../pill';
 
 const EventTags = React.createClass({
   propTypes: {
@@ -27,25 +29,29 @@ const EventTags = React.createClass({
           group={this.props.group}
           event={this.props.event}
           title={t('Tags')}
-          type="tags">
-        <ul className="mini-tag-list">
+          type="tags"
+          className="p-b-1"
+          >
+        <Pills className="no-margin">
           {tags.map((tag) => {
             return (
-              <li key={tag.key}>
-                {tag.key} = <Link
-                  to={`/${orgId}/${projectId}/`}
-                  query={{query: `${tag.key}:"${tag.value}"`}}>
-                  {tag.value}
+              <Pill key={tag.key} name={tag.key}>
+                <Link
+                  to={{
+                    pathname: `/${orgId}/${projectId}/`,
+                    query: {query: `${tag.key}:"${tag.value}"`}
+                  }}>
+                    {deviceNameMapper(tag.value)}
                 </Link>
                 {isUrl(tag.value) &&
                   <a href={tag.value} className="external-icon">
                     <em className="icon-open" />
                   </a>
                 }
-              </li>
+              </Pill>
             );
           })}
-        </ul>
+        </Pills>
       </EventDataSection>
     );
   }

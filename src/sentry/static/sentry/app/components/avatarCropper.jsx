@@ -235,7 +235,7 @@ const AvatarCropper = React.createClass({
     if (img.naturalWidth < this.MIN_DIMENSION ||
           img.naturalHeight < this.MIN_DIMENSION) {
       return ('Please upload an image larger than ' +
-              this.MIN_DIMENSION + 'px by ' + this.MIN_DIMENSION + 'px.');
+              (this.MIN_DIMENSION - 1) + 'px by ' + (this.MIN_DIMENSION - 1) + 'px.');
     }
     if (img.naturalWidth > this.MAX_DIMENSION ||
           img.naturalHeight > this.MAX_DIMENSION) {
@@ -350,13 +350,13 @@ const AvatarCropper = React.createClass({
       <div>
         {!src &&
         <div className="image-well well blankslate">
-          <p><a onClick={this.uploadClick}><strong>{t('Upload a photo')}</strong></a>{t(' to get started.')}</p>
+          <p><a onClick={this.uploadClick}><strong>Upload a photo</strong></a> to get started.</p>
         </div>}
         {this.renderImageCrop()}
         {this.renderCanvas()}
         <div className="form-group">
           {src && <a onClick={this.uploadClick}>{t('Change Photo')}</a>}
-          <input ref="file" type="file" accept="image/*" onChange={this.onChange} style={style}/>
+          <input ref="file" type="file" accept="image/gif,image/jpeg,image/png" onChange={this.onChange} style={style}/>
         </div>
       </div>
     );
